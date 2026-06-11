@@ -21,7 +21,7 @@ def generate_pdf(patient_name, pred_class, top_conf, probas, info, now):
     # Title
     title_style = ParagraphStyle('title', fontSize=18, fontName='Helvetica-Bold',
                                   spaceAfter=10, textColor=colors.HexColor('#1e3a5f'))
-    elements.append(Paragraph("🧠 Rapport Médical — Brain Tumor Detection", title_style))
+    elements.append(Paragraph(" Rapport Médical — Brain Tumor Detection", title_style))
     elements.append(Spacer(1, 10))
 
     # Info table
@@ -60,7 +60,7 @@ def generate_pdf(patient_name, pred_class, top_conf, probas, info, now):
     elements.append(Spacer(1, 20))
     disclaimer = ParagraphStyle('disc', fontSize=9, textColor=colors.grey)
     elements.append(Paragraph(
-        "⚠️ Ce rapport est généré à des fins académiques (PFE). "
+        "Attention : Ce rapport est généré à des fins académiques (PFE). "
         "Il ne remplace pas un diagnostic médical professionnel.",
         disclaimer
     ))
@@ -71,36 +71,22 @@ def generate_pdf(patient_name, pred_class, top_conf, probas, info, now):
 
 
 
-
-
-
-
-
-
-
-# PDF Download button
-pdf_buffer = generate_pdf(patient_name, pred_class, top_conf, probas, info, now)
-st.download_button(
-    label="📥 Télécharger le rapport PDF",
-    data=pdf_buffer,
-    file_name=f"rapport_{patient_display}_{datetime.now().strftime('%Y%m%d')}.pdf",
-    mime="application/pdf",
-    use_container_width=True
-)
-
-
-
-
 st.set_page_config(page_title="Brain Tumor Detection", page_icon="🧠", layout="wide")
 
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.main { background-color: #080c14; }
-
+.main {
+    background-color:#F8F7FF;
+}
 .app-header {
-    background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 50%, #0a2540 100%);
+    background: linear-gradient(
+135deg,
+#6D28D9 0%,
+#7C3AED 50%,
+#A855F7 100%
+);
     padding: 2.2rem 2.8rem; border-radius: 20px; margin-bottom: 2rem;
     border: 1px solid #1e3a5f; box-shadow: 0 4px 32px rgba(59,130,246,0.08);
 }
@@ -108,7 +94,9 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .app-header p  { color: #7fa3c8; margin: 0.5rem 0 0 0; font-size: 0.92rem; }
 
 .card {
-    background: #0f1623; border: 1px solid #1e3a5f;
+   background:white;
+border:1px solid #DDD6FE;
+}
     border-radius: 16px; padding: 1.6rem; margin-bottom: 1.2rem;
     box-shadow: 0 2px 16px rgba(0,0,0,0.3);
 }
@@ -170,7 +158,7 @@ CLASS_INFO = {
 }
 
 DRIVE_ID  = '1uGofq96oRk6E5_9vYhVqejarUijrpQMc'
-MODEL_FILE = 'mobilenet_ft.h5'
+MODEL_FILE = 'brain_tumor_mobilenet_finetuned.h5'
 
 # ── Model loading ──────────────────────────────────────────────────────────────
 @st.cache_resource
@@ -183,7 +171,7 @@ def load_model():
                 gdown.download(url, MODEL_FILE, quiet=False)
         return tf.keras.models.load_model(MODEL_FILE)
     except Exception as e:
-        st.error(f"❌ Erreur : {e}")
+        st.error(f" Erreur {e}")
         return None
 
 def preprocess(img):
@@ -250,7 +238,7 @@ with st.sidebar:
 # ── Header ─────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="app-header">
-    <h1>🧠 Détection des Tumeurs Cérébrales</h1>
+    <h1> Détection des Tumeurs Cérébrales</h1>
     <p>PFE · Deep Learning · MobileNetV2 Fine Tuning &nbsp;│&nbsp; 4 classes &nbsp;│&nbsp;
        <span style="color:#4ade80;font-weight:600">96.21% accuracy</span>
     </p>
@@ -261,7 +249,7 @@ st.markdown("""
 col_l, col_r = st.columns([1, 1], gap="large")
 
 with col_l:
-    st.markdown('<div class="card"><h3>📂 Image IRM</h3>', unsafe_allow_html=True)
+    st.markdown('<div class="card"><h3> Image IRM</h3>', unsafe_allow_html=True)
     patient_name = st.text_input("Nom du patient (optionnel)", placeholder="Ex: Ahmed Benali")
     uploaded = st.file_uploader("Uploader une image IRM", type=['jpg','jpeg','png'], label_visibility="collapsed")
     if uploaded:
@@ -349,9 +337,29 @@ with col_r:
             st.markdown("---")
             now = datetime.now().strftime("%d/%m/%Y à %H:%M")
             patient_display = patient_name if patient_name else "Non renseigné"
+
+            
+# PDF generation
+pdf_buffer = generate_pdf(
+    patient_name,
+    pred_class,
+    top_conf,
+    probas,
+    info,
+    now
+)
+
+st.download_button(
+    label=" Télécharger le rapport PDF",
+    data=pdf_buffer,
+    file_name=f"rapport_{datetime.now().strftime('%Y%m%d')}.pdf",
+    mime="application/pdf",
+    use_container_width=True
+)
+
             st.markdown(f"""
             <div class="rapport-box">
-                <div class="rapport-title">📋 Rapport médical</div>
+                <div class="rapport-title"> Rapport médical</div>
                 <div class="rapport-row"><span class="rapport-label">Patient</span><span class="rapport-value">{patient_display}</span></div>
                 <div class="rapport-row"><span class="rapport-label">Date d'analyse</span><span class="rapport-value">{now}</span></div>
                 <div class="rapport-row"><span class="rapport-label">Modèle utilisé</span><span class="rapport-value">MobileNetV2 Fine Tuning</span></div>
@@ -364,7 +372,7 @@ with col_r:
                     💡 <strong style="color:#e2e8f0">Recommandation :</strong> {info['recommandation']}
                 </div>
                 <div style="margin-top:0.8rem;font-size:0.72rem;color:#1e3a5f;text-align:center">
-                    ⚠️ Ce rapport est généré à des fins académiques (PFE). Consultez un médecin qualifié.
+                    Attention : Ce rapport est généré à des fins académiques (PFE). Consultez un médecin qualifié.
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -385,7 +393,7 @@ with col_r:
 st.markdown("""
 <div style="margin-top:1.5rem;padding:0.9rem 1.4rem;background:#0a1628;
      border-left:3px solid #3b82f6;border-radius:8px;font-size:0.79rem;color:#2d4a6a">
-    ⚠️ <strong style="color:#7fa3c8">Avertissement médical :</strong>
+    Attention : <strong style="color:#7fa3c8">Avertissement médical :</strong>
     Cette application est développée à des fins académiques (PFE).
     Elle ne remplace pas un diagnostic médical professionnel.
 </div>
