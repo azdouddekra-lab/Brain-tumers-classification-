@@ -369,7 +369,7 @@ st.download_button(
                 <div class="rapport-row"><span class="rapport-label">Sévérité</span><span class="rapport-value" style="color:{info['sev_color']}">{info['severity']}</span></div>
                 <div style="margin-top:0.8rem;padding:0.7rem;background:#0d1f36;border-radius:8px;
                             border-left:3px solid {info['color']};font-size:0.81rem;color:#7fa3c8">
-                    💡 <strong style="color:#e2e8f0">Recommandation :</strong> {info['recommandation']}
+                     <strong style="color:#e2e8f0">Recommandation :</strong> {info['recommandation']}
                 </div>
                 <div style="margin-top:0.8rem;font-size:0.72rem;color:#1e3a5f;text-align:center">
                     Attention : Ce rapport est généré à des fins académiques (PFE). Consultez un médecin qualifié.
