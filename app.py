@@ -5,6 +5,92 @@ import os
 import gdown
 from datetime import datetime
 
+
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+import io
+
+def generate_pdf(patient_name, pred_class, top_conf, probas, info, now):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # Title
+    title_style = ParagraphStyle('title', fontSize=18, fontName='Helvetica-Bold',
+                                  spaceAfter=10, textColor=colors.HexColor('#1e3a5f'))
+    elements.append(Paragraph("🧠 Rapport Médical — Brain Tumor Detection", title_style))
+    elements.append(Spacer(1, 10))
+
+    # Info table
+    data = [
+        ['Patient',          patient_name if patient_name else 'Non renseigné'],
+        ["Date d'analyse",   now],
+        ['Modèle utilisé',   'MobileNetV2 Fine Tuning'],
+        ['Accuracy modèle',  '96.21%'],
+        ['Diagnostic',       f"{info['emoji']} {info['label']}"],
+        ['Confiance',        f"{top_conf:.1f}%"],
+        ['Sévérité',         info['severity']],
+        ['Recommandation',   info['recommandation']],
+    ]
+
+    table = Table(data, colWidths=[150, 330])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#e8f0fe')),
+        ('FONTNAME',   (0,0), (0,-1), 'Helvetica-Bold'),
+        ('FONTSIZE',   (0,0), (-1,-1), 11),
+        ('ROWBACKGROUNDS', (0,0), (-1,-1), [colors.white, colors.HexColor('#f8faff')]),
+        ('GRID',       (0,0), (-1,-1), 0.5, colors.HexColor('#c0d0e0')),
+        ('PADDING',    (0,0), (-1,-1), 8),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 20))
+
+    # Probabilities
+    elements.append(Paragraph("Probabilités par classe :", styles['Heading2']))
+    for i, cls in enumerate(CLASSES):
+        pct = float(probas[i]) * 100
+        elements.append(Paragraph(
+            f"• {CLASS_INFO[cls]['label']} : <b>{pct:.1f}%</b>",
+            styles['Normal']
+        ))
+
+    elements.append(Spacer(1, 20))
+    disclaimer = ParagraphStyle('disc', fontSize=9, textColor=colors.grey)
+    elements.append(Paragraph(
+        "⚠️ Ce rapport est généré à des fins académiques (PFE). "
+        "Il ne remplace pas un diagnostic médical professionnel.",
+        disclaimer
+    ))
+
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
+
+
+
+
+
+
+
+
+
+# PDF Download button
+pdf_buffer = generate_pdf(patient_name, pred_class, top_conf, probas, info, now)
+st.download_button(
+    label="📥 Télécharger le rapport PDF",
+    data=pdf_buffer,
+    file_name=f"rapport_{patient_display}_{datetime.now().strftime('%Y%m%d')}.pdf",
+    mime="application/pdf",
+    use_container_width=True
+)
+
+
+
+
 st.set_page_config(page_title="Brain Tumor Detection", page_icon="🧠", layout="wide")
 
 st.markdown("""
@@ -132,7 +218,8 @@ def gradcam(model, arr, class_idx):
         orig = np.array(arr[0] * 255, dtype=np.uint8)
         overlay = cv2.addWeighted(orig, 0.55, colored, 0.45, 0)
         return Image.fromarray(overlay)
-    except:
+    except Exception as e:
+        st.error(f"Grad-CAM error: {e}")
         return None
 
 # ── Sidebar ────────────────────────────────────────────────────────────────────
