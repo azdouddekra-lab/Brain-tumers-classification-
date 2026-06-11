@@ -337,26 +337,22 @@ with col_r:
             st.markdown("---")
             now = datetime.now().strftime("%d/%m/%Y à %H:%M")
             patient_display = patient_name if patient_name else "Non renseigné"
-
             
-# PDF generation
-pdf_buffer = generate_pdf(
-    patient_name,
-    pred_class,
-    top_conf,
-    probas,
-    info,
-    now
-)
-
-st.download_button(
-    label=" Télécharger le rapport PDF",
-    data=pdf_buffer,
-    file_name=f"rapport_{datetime.now().strftime('%Y%m%d')}.pdf",
-    mime="application/pdf",
-    use_container_width=True
-)
-
+            pdf_buffer = generate_pdf(
+            patient_name,
+            pred_class,
+            top_conf,
+            probas,
+            info,
+            now
+            )
+            st.download_button(
+            label=" Télécharger le rapport PDF",
+            data=pdf_buffer,
+            file_name=f"rapport_{datetime.now().strftime('%Y%m%d')}.pdf",
+            mime="application/pdf",
+            use_container_width=True
+            )
             st.markdown(f"""
             <div class="rapport-box">
                 <div class="rapport-title"> Rapport médical</div>
@@ -386,6 +382,10 @@ st.download_button(
             </div>
         </div>
         """, unsafe_allow_html=True)
+
+            
+
+
 
     st.markdown('</div>', unsafe_allow_html=True)
 
